@@ -42,7 +42,11 @@
     titulo.textContent = 'Nada para conectar';
     mensagem.textContent = 'Abra esta página pelo botão de conexão do Clipflow.';
   } else {
-    const porta = params.get('porta') || '4173';
+    // O Clipflow local põe a própria porta no fim do `state` (`<aleatório>.<porta>`),
+    // e o TikTok devolve o `state` intacto. Só o número da porta é aproveitado:
+    // o endereço de destino é sempre 127.0.0.1.
+    const daState = /\.(\d{2,5})$/.exec(params.get('state') || '');
+    const porta = daState && Number(daState[1]) >= 1024 && Number(daState[1]) <= 65535 ? daState[1] : (params.get('porta') || '4173');
     const destino = new URL(`http://127.0.0.1:${porta}/oauth/tiktok`);
     ['code', 'state', 'scopes'].forEach((chave) => {
       const valor = params.get(chave);
